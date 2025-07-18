@@ -1,3 +1,7 @@
+import {data} from "../data/dataset_1.js"
+
+const REQUIRED_DATA_KEYS = ['customers', 'products', 'sellers', 'purchase_records'];
+
 /**
  * Функция для расчета прибыли
  * @param purchase запись о покупке
@@ -26,9 +30,22 @@ function calculateBonusByProfit(index, total, seller) {
  * @returns {{revenue, top_products, bonus, name, sales_count, profit, seller_id}[]}
  */
 function analyzeSalesData(data, options) {
-    // @TODO: Проверка входных данных
+
+    // Проверка входных данных
+  if (
+    !(data &&
+      Object.entries(data).every(
+        ([key, value]) =>
+          REQUIRED_DATA_KEYS.includes(key) &&
+          Array.isArray(value) &&
+          value.length > 0
+      ))
+  ) {
+    throw new Error('Uncorrected data');
+  }
 
     // @TODO: Проверка наличия опций
+
 
     // @TODO: Подготовка промежуточных данных для сбора статистики
 
@@ -42,3 +59,5 @@ function analyzeSalesData(data, options) {
 
     // @TODO: Подготовка итоговой коллекции с нужными полями
 }
+
+analyzeSalesData(data)
