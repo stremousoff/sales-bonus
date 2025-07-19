@@ -27,7 +27,8 @@ function calculateBonusByProfit(index, total, seller) {
   }
   if (index !== (total - 1)) {
     const bonus_rate = totalPercent[index] ?? totalPercent.total;
-    return seller.profit * bonus_rate;
+    // Прибыль уже в копейках, просто применяем ставку и округляем
+    return Math.round(seller.profit * bonus_rate);
   }
   return 0;
 }
@@ -83,8 +84,13 @@ function analyzeSalesData(data, options) {
     seller.sales_count++;
     record.items.forEach(item => {
       const product = productIndex[item.sku];
-      seller.revenue += item.quantity * item.sale_price * (1 - item.discount / 100);
-      seller.profit += item.quantity * item.sale_price * (1 - item.discount / 100) - product.purchase_price * item.quantity;
+      const revenue_float = item.quantity * item.sale_price * (1 - item.discount / 100);
+      const cost_float = product.purchase_price * item.quantity;
+
+      // Считаем в копейках, чтобы избежать ошибок округления
+      seller.revenue += Math.round(revenue_float * 100);
+      seller.profit += Math.round((revenue_float - cost_float) * 100);
+
       if (!seller.products_sold[item.sku]) {
         seller.products_sold[item.sku] = 0;
       }
@@ -97,11 +103,16 @@ function analyzeSalesData(data, options) {
       .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
       .slice(0, 10)
       .map(([sku, quantity]) => ({ sku, quantity }));
+    
     seller.bonus = calculateBonus(index, resultData.length, seller);
-    seller.revenue = parseFloat(seller.revenue.toFixed(2));
-    seller.profit = parseFloat(seller.profit.toFixed(2));
-    seller.bonus = parseFloat(seller.bonus.toFixed(2));
+
+    // Преобразуем копейки обратно в рубли для вывода
+    seller.revenue /= 100;
+    seller.profit /= 100;
+    seller.bonus /= 100;
+
     delete seller.products_sold;
   })
+  console.log(resultData)
   return resultData;
 }
