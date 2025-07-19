@@ -91,7 +91,7 @@ function analyzeSalesData(data, options) {
       seller.products_sold[item.sku] += item.quantity;
     });
   });
-  const resultData = Object.values(sellerIndex)
+  const resultData = Object.values(sellerIndex).sort((seller1, seller2) => seller2.profit - seller1.profit)
   resultData.forEach((seller, index) => {
     seller.top_products = Object.entries(seller.products_sold)
       .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
