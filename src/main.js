@@ -27,8 +27,7 @@ function calculateBonusByProfit(index, total, seller) {
   }
   if (index !== (total - 1)) {
     const bonus_rate = totalPercent[index] ?? totalPercent.total;
-    // Прибыль уже в копейках, просто применяем ставку и округляем
-    return Math.round(seller.profit * bonus_rate);
+    return seller.profit * bonus_rate;
   }
   return 0;
 }
@@ -84,35 +83,25 @@ function analyzeSalesData(data, options) {
     seller.sales_count++;
     record.items.forEach(item => {
       const product = productIndex[item.sku];
-      const revenue_float = item.quantity * item.sale_price * (1 - item.discount / 100);
-      const cost_float = product.purchase_price * item.quantity;
-
-      // Считаем в копейках, чтобы избежать ошибок округления
-      seller.revenue += Math.round(revenue_float * 100);
-      seller.profit += Math.round((revenue_float - cost_float) * 100);
-
+      seller.revenue += item.quantity * item.sale_price * (1 - item.discount / 100);
+      seller.profit += item.quantity * item.sale_price * (1 - item.discount / 100) - product.purchase_price * item.quantity;
       if (!seller.products_sold[item.sku]) {
         seller.products_sold[item.sku] = 0;
       }
       seller.products_sold[item.sku] += item.quantity;
     });
   });
-  const resultData = Object.values(sellerIndex).sort((seller1, seller2) => seller2.profit - seller1.profit)
+  const resultData = Object.values(sellerIndex)
   resultData.forEach((seller, index) => {
     seller.top_products = Object.entries(seller.products_sold)
       .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
       .slice(0, 10)
       .map(([sku, quantity]) => ({ sku, quantity }));
-    
     seller.bonus = calculateBonus(index, resultData.length, seller);
-
-    // Преобразуем копейки обратно в рубли для вывода
-    seller.revenue /= 100;
-    seller.profit /= 100;
-    seller.bonus /= 100;
-
+    seller.revenue = parseFloat(seller.revenue.toFixed(2));
+    seller.profit = parseFloat(seller.profit.toFixed(2));
+    seller.bonus = parseFloat(seller.bonus.toFixed(2));
     delete seller.products_sold;
   })
-  console.log(resultData)
   return resultData;
 }
