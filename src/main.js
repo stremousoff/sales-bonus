@@ -69,7 +69,8 @@ function analyzeSalesData(data, options) {
         sales_count: 0,
         top_products: [],
         bonus: 0,
-        products_sold: {}
+        products_sold: {},
+        seller_id: seller.id,
       }
     ])
   );
