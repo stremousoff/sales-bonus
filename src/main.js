@@ -93,7 +93,10 @@ function analyzeSalesData(data, options) {
   });
   const resultData = Object.values(sellerIndex).sort((seller1, seller2) => seller2.profit - seller1.profit)
   resultData.forEach((seller, index) => {
-    seller.top_products = Object.entries(seller.products_sold).sort((product1, product2) => product2[1] - product1[1]).slice(0, 10)
+    seller.top_products = Object.entries(seller.products_sold)
+      .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
+      .slice(0, 10)
+      .map(([sku]) => sku);
     seller.bonus = calculateBonus(index, resultData.length, seller);
     seller.revenue = parseFloat(seller.revenue.toFixed(2));
     seller.profit = parseFloat(seller.profit.toFixed(2));
