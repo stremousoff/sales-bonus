@@ -1,5 +1,3 @@
-import {data} from "../data/dataset_1.js"
-
 const REQUIRED_DATA_KEYS = ['customers', 'products', 'sellers', 'purchase_records'];
 
 /**
@@ -21,6 +19,17 @@ function calculateSimpleRevenue(purchase, _product) {
  */
 function calculateBonusByProfit(index, total, seller) {
     // @TODO: Расчет бонуса от позиции в рейтинге
+  const totalPercent = {
+    0: 0.15,
+    1: 0.1,
+    2: 0.1,
+    total: 0.05
+  }
+  if (index !== (total - 1)) {
+    const bonus_rate = totalPercent[index] ?? totalPercent.total;
+    return seller.profit * bonus_rate;
+  }
+  return 0;
 }
 
 /**
@@ -31,11 +40,9 @@ function calculateBonusByProfit(index, total, seller) {
  */
 function analyzeSalesData(data, options) {
 
-    // Проверка входных данных
   if (
     !(data &&
-      Object.entries(data).every(
-        ([key, value]) =>
+      Object.entries(data).every(([key, value]) =>
           REQUIRED_DATA_KEYS.includes(key) &&
           Array.isArray(value) &&
           value.length > 0
@@ -44,20 +51,53 @@ function analyzeSalesData(data, options) {
     throw new Error('Uncorrected data');
   }
 
-    // @TODO: Проверка наличия опций
+  const { calculateRevenue, calculateBonus } = options;
+  if (
+    !(typeof calculateRevenue === "function" ||
+      typeof calculateBonus === "function"
+  )) {
+    throw new Error('Options are not defined');
+  }
 
+  const sellerIndex = Object.fromEntries(
+    data.sellers.map(seller => [
+      seller.id,
+      {
+        name: `${seller.first_name} ${seller.last_name}`,
+        revenue: 0,
+        profit: 0,
+        sales_count: 0,
+        top_products: [],
+        bonus: 0,
+        products_sold: {}
+      }
+    ])
+  );
 
-    // @TODO: Подготовка промежуточных данных для сбора статистики
-
-    // @TODO: Индексация продавцов и товаров для быстрого доступа
-
-    // @TODO: Расчет выручки и прибыли для каждого продавца
-
-    // @TODO: Сортировка продавцов по прибыли
-
-    // @TODO: Назначение премий на основе ранжирования
-
-    // @TODO: Подготовка итоговой коллекции с нужными полями
+  const productIndex = Object.fromEntries(
+    data.products.map(product => [product.sku, product])
+  );
+  data.purchase_records.forEach(record => {
+    const seller = sellerIndex[record.seller_id];
+    seller.sales_count++;
+    record.items.forEach(item => {
+      const product = productIndex[item.sku];
+      seller.revenue += item.quantity * item.sale_price * (1 - item.discount / 100);
+      seller.profit += item.quantity * item.sale_price * (1 - item.discount / 100) - product.purchase_price * item.quantity;
+      if (!seller.products_sold[item.sku]) {
+        seller.products_sold[item.sku] = 0;
+      }
+      seller.products_sold[item.sku] += item.quantity;
+    });
+  });
+  const resultData = Object.values(sellerIndex).sort((seller1, seller2) => seller2.profit - seller1.profit)
+  resultData.forEach((seller, index) => {
+    seller.top_products = Object.entries(seller.products_sold).sort((product1, product2) => product2[1] - product1[1]).slice(0, 10)
+    seller.bonus = calculateBonus(index, resultData.length, seller);
+    seller.revenue = parseFloat(seller.revenue.toFixed(2));
+    seller.profit = parseFloat(seller.profit.toFixed(2));
+    seller.bonus = parseFloat(seller.bonus.toFixed(2));
+    delete seller.products_sold;
+  })
+  return resultData;
 }
-
-analyzeSalesData(data)
