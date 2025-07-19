@@ -63,14 +63,14 @@ function analyzeSalesData(data, options) {
     data.sellers.map(seller => [
       seller.id,
       {
+        seller_id: seller.id,
         name: `${seller.first_name} ${seller.last_name}`,
         revenue: 0,
         profit: 0,
         sales_count: 0,
         top_products: [],
         bonus: 0,
-        products_sold: {},
-        seller_id: seller.id,
+        products_sold: {}
       }
     ])
   );
