@@ -95,8 +95,8 @@ function analyzeSalesData(data, options) {
   resultData.forEach((seller, index) => {
     seller.top_products = Object.entries(seller.products_sold)
       .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
-      .slice(0, 3)
-      .map(([sku]) => sku);
+      .slice(0, 10)
+      .map(([sku, quantity]) => ({ sku, quantity }));
     seller.bonus = calculateBonus(index, resultData.length, seller);
     seller.revenue = parseFloat(seller.revenue.toFixed(2));
     seller.profit = parseFloat(seller.profit.toFixed(2));
