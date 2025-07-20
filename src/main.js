@@ -85,11 +85,8 @@ function analyzeSalesData(data, options) {
       const product = productIndex[item.sku];
       const itemRevenue = calculateSimpleRevenue(item, product);
       seller.revenue += itemRevenue;
-      seller.profit += itemRevenue - (product.purchase_price * item.quantity);
-
       seller.revenue = parseFloat(seller.revenue.toFixed(2));
-      seller.profit = parseFloat(seller.profit.toFixed(2));
-
+      seller.profit += itemRevenue - (product.purchase_price * item.quantity);
       if (!seller.products_sold[item.sku]) {
         seller.products_sold[item.sku] = 0;
       }
@@ -98,18 +95,14 @@ function analyzeSalesData(data, options) {
   });
   const resultData = Object.values(sellerIndex).sort((seller1, seller2) => seller2.profit - seller1.profit)
   resultData.forEach((seller, index) => {
-    // Определение топ-10 продуктов для продавца
     seller.top_products = Object.entries(seller.products_sold)
       .sort(([, qtyA], [, qtyB]) => qtyB - qtyA)
       .slice(0, 10)
       .map(([sku, quantity]) => ({ sku, quantity }));
-    
     seller.bonus = calculateBonus(index, resultData.length, seller);
-
+    seller.profit = parseFloat(seller.profit.toFixed(2));
     seller.bonus = parseFloat(seller.bonus.toFixed(2));
-
     delete seller.products_sold;
   })
   return resultData;
 }
-
