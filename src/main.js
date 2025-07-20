@@ -7,7 +7,8 @@ const REQUIRED_DATA_KEYS = ['customers', 'products', 'sellers', 'purchase_record
  * @returns {number}
  */
 function calculateSimpleRevenue(purchase, _product) {
-   // @TODO: Расчет прибыли от операции
+  const discount = 1 - (purchase.discount / 100);
+  return purchase.sale_price * purchase.quantity * discount;
 }
 
 /**
@@ -18,7 +19,6 @@ function calculateSimpleRevenue(purchase, _product) {
  * @returns {number}
  */
 function calculateBonusByProfit(index, total, seller) {
-    // @TODO: Расчет бонуса от позиции в рейтинге
   const totalPercent = {
     0: 0.15,
     1: 0.1,
