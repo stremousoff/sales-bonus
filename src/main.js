@@ -99,11 +99,9 @@ function analyzeSalesData(data, options) {
       .slice(0, 10)
       .map(([sku, quantity]) => ({ sku, quantity }));
     seller.bonus = calculateBonus(index, resultData.length, seller);
-
     seller.revenue = parseFloat(seller.revenue.toFixed(2));
     seller.profit = parseFloat(seller.profit.toFixed(2));
     seller.bonus = parseFloat(seller.bonus.toFixed(2));
-
     delete seller.products_sold;
   })
   return resultData;
